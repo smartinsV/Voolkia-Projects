@@ -1,0 +1,92 @@
+<div class="form-mini-container">
+    <h1>Register a paper into the blockchain (For testing purposes)</h1>
+    <div class="form-mini">
+        <div class="form-row">
+            <input type="text" name="issue" placeholder="Issue" id='issue'>
+        </div>
+        <div class="form-row">
+            <input type="text" name="authors" placeholder="Authors" id='authors'>
+        </div>
+        <div class="form-row">
+            <input type="text" name="title" placeholder="Title" id='title'>
+        </div>
+        <div class="form-row">
+            <input type="file" name="paper" placeholder="Test hash paper" id='paper'>
+        </div> 
+        <div class="form-row form-last-row">
+            <button id="sendPaper">Submit</button>
+        </div>
+        <p id="paperCount">Submitted papers: 0</p>
+    </div>
+</div>
+<script>
+    var hashContent;
+    var hashID;
+    var paper = "";
+
+    apiURL = 'http://localhost:5000/publications'
+
+    fetch(`${apiURL}/count`)
+        .then(resp => resp.json())
+        .then(data => { 
+                let { count } = data;
+                $('#paperCount').text(`Submitted papers: ${count}`);
+            })
+        .catch(err => console.log(err))
+
+    $('#paper').change(function(){
+        paper = $(this).prop('files')[0];
+        read = new FileReader();
+        read.readAsBinaryString(paper);
+        $("#sendPaper").prop("disabled", true);
+        read.onloadend = function(){
+            hashContent = web3.sha3(read.result);
+            console.log(hashContent);
+            fetch(`${apiURL}/content/${hashContent}`)
+                .then(resp => resp.json())
+                .then(data => { 
+                        $("#sendPaper").prop("disabled", false);
+                        let {authors, title} = data;
+                        if(authors!=''){ 
+                            paper = "";
+                            alert(`Warning! This paper is already 
+                                   registered as ${title} from ${authors}`);
+                            $('#paper').val("");
+                        }
+                    })
+                .catch(err => console.log(err))
+        }
+    });
+
+    $('#sendPaper').click(function(){
+        let authors = $('#authors').val();
+        let title = $('#title').val();
+        let issue = $('#issue').val();
+        if(authors !="" && title!="" && paper!=""){
+            console.log('content = '+hashContent+' ?');
+            fetch(`${apiURL}`, {
+                            method: 'post',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(
+                                {
+                                    content: hashContent, 
+                                    vol: issue,
+                                    authors: authors, 
+                                    title: title, 
+                                    user :"SB2202",
+                                }
+                            )
+                    })
+                    .then(() => {
+                        confirm("paper added")
+                        location.reload()    
+                    })
+                    .catch((err) => confirm(`error ${err}`));
+        }
+        else{
+            alert("Complete todos los campos antes de continuar");
+        }
+    });
+</script>

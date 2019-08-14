@@ -1,0 +1,90 @@
+<div id="queryForm" class="form-mini-container">
+    <h1>Paper verification</h1>
+    <div class="form-mini">
+        <div class="form-row">
+            <input type="file" name="paper" placeholder="Test hash paper" id='paper'>
+        </div>
+        <div class="form-row form-last-row">
+            <button id="checkPaper">Check</button>
+        </div>
+        <p id="paperCount">Submitted papers: 0</p>
+    </div>
+</div>
+<div id='queryResult' class="form-mini-container" style="display:none">
+    <h1 id='queryResponse'>There is a paper stored with the same content and registered with this information</h1>
+    <div class="form-mini">
+        <div id="paperInfo">
+            <div class="form-row">
+                <strong>Issue</strong>
+                <p id="queryIssue" class="form-p"></p>
+            </div>
+            <div class="form-row">
+                <strong>Author</strong>
+                <p id="queryAuthor" class="form-p"></p>
+            </div>
+            <div class="form-row">
+                <strong>Title</strong>
+                <p id="queryTitle" class="form-p"></p>
+            </div>
+        </div>
+        <div class="form-row form-last-row">
+            <button id="searchAgain">Search Again</b    utton>
+        </div>
+    </div>
+</div>
+<script>
+    var hashPaper;
+
+    apiURL = 'http://localhost:5000/publications';
+
+    fetch(`${apiURL}/count`)
+        .then(resp => resp.json())
+        .then(data => { 
+                let { count } = data;
+                $('#paperCount').text(`Submitted papers: ${count}`);
+            })
+        .catch(err => console.log(err))
+    
+    $('#paper').change(function(){
+        paper = $(this).prop('files')[0];
+        read = new FileReader();
+        read.readAsBinaryString(paper);
+        read.onloadend = function(){
+            hashPaper = web3.sha3(read.result);
+        }
+    });
+
+    $('#checkPaper').click(function(){
+        if(hashPaper){
+            fetch(`${apiURL}/content/${hashPaper}`)
+                .then(resp => resp.json())
+                .then(data => { 
+                    let { volume, authors, title } = data;
+                    $("#queryForm").slideUp(function(){
+                        if(authors!=''){
+                            $("#queryIssue").text(volume);
+                            $("#queryAuthor").text(authors);
+                            $("#queryTitle").text(title);
+                        }
+                        else{
+                            console.log('No papers found.')
+                            $("#queryResponse").text("There are no papers registered with that content");
+                            $("#paperInfo").hide();
+                        }
+                        $("#queryResult").slideDown();
+                    });
+                })
+                .catch(err => console.log(err));
+        }
+        else{
+            alert("Please load a paper");
+        }
+    });
+
+    $("#searchAgain").click(function(){
+        $("#queryResult").slideUp(function(){
+            $("#paper").val("");
+            $("#queryForm").slideDown();
+        });
+    });
+</script>

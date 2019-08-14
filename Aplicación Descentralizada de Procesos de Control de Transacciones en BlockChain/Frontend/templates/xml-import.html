@@ -1,0 +1,98 @@
+<div id="queryForm" class="form-mini-container">
+    <h1>Import issues from XML</h1>
+    <div class="form-mini spaced">
+        <input id="upload" type="file"></input><br>
+        <button id="import">Import all</button><br>
+        <table id="lista" class="papers">
+            <thead>
+                <tr>
+                    <th> Issue </th>
+                    <th> Title </th>
+                    <th> Authors </th>
+                    <th> Date </th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script language="javascript" type="text/javascript" src="js/xmlManager.js"></script>
+<script>
+    var paper_list = {};
+    var lista = $("#lista").DataTable({paging: false});
+    apiURL = 'http://localhost:5000/publications'
+
+    //return a promise that resolves with a File instance
+    function urltoFile(url, filename, mimeType){
+        return (fetch(url)
+            .then( res => {return res.arrayBuffer();})
+            .then( buf => {return new File([buf], filename, {type:mimeType});})
+        );
+    }
+
+    $("#upload").change( ({target}) => {
+        lista.clear().draw();
+
+        var file = $(target).prop('files')[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.readAsText(file, "UTF-8");
+            reader.onload = evt => {
+                var content = evt.target.result;
+                processXML(content);
+            }
+            reader.onerror = evt => {
+                console.log("error reading file");
+            }
+        }
+        
+    });
+
+    /// http://revistas.unla.edu.ar/software/article/view/article_id/article_galley
+
+    $(document).on("click", ".paper", function(){
+            //reconstruct embed to file object
+        titulo = $(this).find('td:nth-child(2)').html();
+        embed = paper_list[titulo];
+        urltoFile('data:text/plain;base64,'+embed, titulo+'.pdf', 'text/plain')
+        .then(function(file){
+            saveAs(file, file.name);
+        });
+    });
+
+    $("#import").click(function(){
+        $(".paper").each(function(){    
+            let paper = $(this);
+            let issue = paper.find('td:nth-child(1)').text();
+            let titulo = paper.find('td:nth-child(2)').text();
+            let autores = paper.find('td:nth-child(3)').text();
+            urltoFile('data:text/plain;base64,'+paper_list[titulo], titulo+'.pdf', 'text/plain')
+            .then(function(file){
+                let reader = new FileReader();
+                reader.readAsBinaryString(file);
+                reader.onloadend = function(){
+                    hashContent = web3.sha3(reader.result);
+                    // TODO: Change hardcoded username 
+                    fetch(`${apiURL}`, {
+                            method: 'post',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(
+                                {
+                                    content: hashContent, 
+                                    vol: issue,
+                                    authors: autores, 
+                                    title: titulo, 
+                                    user :"SB2202",
+                                }
+                            )
+                    })
+                    .then(() => paper.css("color","green"))
+                    .catch(() => paper.css("color","red"));
+                    }
+            });
+        });
+    });
+</script>

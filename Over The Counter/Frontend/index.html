@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Decentralized Journal System</title>
+
+        <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script language="javascript" type="text/javascript" src="js/FileSaver.js"></script>
+        <script language="javascript" type="text/javascript" src="js/web3.min.js"></script>
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+            <a class="navbar-brand" href="#">DJS</a>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#list">List</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#xml">Register XML</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#single">Single Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#check">Single Verification</a>
+                </li>
+            </ul>
+        </nav>
+        <div class="container">
+            <div class="row justify-content-md-center">
+                <div class="col-md-8">
+                    <content></content>
+                </div>
+            </div>
+            <div class="row">
+                <div class="logo-container">
+                    <div class="logo">
+                        <img src="img/logo-voolkia.png" alt="Voolkia">
+                    </div>
+                    <div class="logo">
+                        <img src="img/logo-rsk.png" alt="RSK">
+                    </div>
+                    <div class="logo">
+                        <img src="img/logo-up.png" alt="UP">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <script>
+            /// http://revistas.unla.edu.ar/software/article/view/article_id/article_galley
+
+            $(document).ready(function(){
+                
+                function load_template(template_name){
+                    $("content").load("templates/"+template_name);
+                }
+            
+                const redirect = () => {
+                    var href = window.location.href; 
+                    var url = href.substring(href.lastIndexOf("#")+1);
+                    
+                    switch(url){
+                        case "single":
+                            load_template("single-import.html");
+                            break;
+                        case "check":
+                            load_template("single-check.html");
+                            break;
+                        case "list":
+                            load_template("stored-list.html");
+                            break;
+                        case "xml":
+                            load_template("xml-import.html");
+                            break;
+                        case "register":
+                            load_template("register.html");
+                            break;
+                        default:
+                            load_template("welcome.html");
+                            break;
+                    }                
+                }
+                
+                //Initial page
+                redirect();
+                
+                //Map SPA urls
+                $(window).on('hashchange', redirect);
+            });   
+        </script>
+    </body>
+</html>

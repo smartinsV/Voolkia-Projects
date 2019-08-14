@@ -1,0 +1,41 @@
+<div id="queryForm" class="form-mini-container">
+    <h1>Registered papers</h1>
+    <div class="form-mini">
+        <p id="paperCount">Submitted papers: 0</p>
+        <table id="papers" class="papers">
+            <thead>
+                <tr>
+                    <th> Issue </th>
+                    <th> Title </th>
+                    <th> Authors </th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    var papers = $("#papers").DataTable();
+
+    apiURL = 'http://localhost:5000/publications'
+
+    fetch(`${apiURL}/count`)
+        .then(resp => resp.json())
+        .then(data => { 
+                let { count } = data;
+                $('#paperCount').text(`Submitted papers: ${count}`);
+            })
+        .catch(err => console.log(err))
+
+    fetch(`${apiURL}`)
+        .then(resp => resp.json())
+        .then(data => { 
+                for (const key of Object.keys(data)) {
+                    let { volume, authors, title, user, content_hash } = data[key];
+                    papers.row.add([volume, title, authors]).draw();
+                }
+            })
+        .catch(err => console.log(err))
+
+</script>
