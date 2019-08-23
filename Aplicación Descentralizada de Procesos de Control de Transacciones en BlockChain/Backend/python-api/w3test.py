@@ -6,7 +6,7 @@ w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
 CONTRACT_ADDR = '0x51121d4632647Bb828F7B10D5AD3633b75316F29'
 
-CONTRACT_ABI = json.loads("""[
+CONTRACT_ABI = json.loads("""[ 
   {
     "constant": true,
     "inputs": [
